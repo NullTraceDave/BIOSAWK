@@ -59,18 +59,28 @@
                     <p class="text-slate-500 text-sm mt-1">May 1st | 5:00 PM - 10:00 PM</p>
                 </div>
 
-                <div class="mb-6">
-                    <div class="text-3xl font-black text-slate-900">₦2,000</div>
-                    <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Per Access Pass</p>
-                </div>
-
                 <div class="space-y-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Select Ticket Tier</label>
+                        <select id="ticket-tier" onchange="updatePriceDisplay()" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-green-500 outline-none transition-all font-bold text-slate-700 mt-1">
+                            <option value="500">Regular — ₦500</option>
+                            <option value="1000">VIP — ₦1,000</option>
+                            <option value="15000">Table for 4 — ₦15,000</option>
+                            <option value="20000">Table for 5 — ₦20,000</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-2">
+                        <div id="price-display" class="text-3xl font-black text-slate-900">₦500</div>
+                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Amount Due</p>
+                    </div>
+
                     <input type="email" id="email-address" placeholder="Student Email Address" 
                            class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-green-500 outline-none transition-all">
                     
                     <button onclick="makePayment()" 
                             class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl hover:bg-black shadow-xl active:scale-95 transition-all uppercase tracking-widest text-sm">
-                        Purchase Ticket
+                        Purchase <span id="btn-ticket-type">Regular</span> Pass
                     </button>
                 </div>
             </div>
@@ -200,27 +210,39 @@
 </footer>
 
 <script>
+    function updatePriceDisplay() {
+        const select = document.getElementById("ticket-tier");
+        const price = select.value;
+        const typeName = select.options[select.selectedIndex].text.split('—')[0].trim();
+        
+        document.getElementById("price-display").innerText = "₦" + Number(price).toLocaleString();
+        document.getElementById("btn-ticket-type").innerText = typeName;
+    }
+
     function makePayment() {
         const email = document.getElementById("email-address").value;
+        const amount = document.getElementById("ticket-tier").value;
+        const ticketName = document.getElementById("ticket-tier").options[document.getElementById("ticket-tier").selectedIndex].text;
+
         if (!email || !email.includes('@')) {
             alert("Please enter a valid student email address.");
             return;
         }
 
         FlutterwaveCheckout({
-            public_key: "FLWPUBK_TEST-e901ddb220d390db03c72ca07954cbdf-X", 
+            public_key: "FLWPUBK_TEST-REPLACE-THIS-KEY", 
             tx_ref: "BIOSA-EMT-" + Date.now(),
-            amount: 2000,
+            amount: amount,
             currency: "NGN",
             payment_options: "card, banktransfer, ussd",
             customer: { email: email },
             customizations: {
                 title: "BIOSA X EMT WEEK 2026",
-                description: "Ticket for Rave & Award Night",
+                description: "Payment for " + ticketName,
             },
             callback: function (data) {
                 document.getElementById('ticket-display').classList.remove('hidden');
-                generateTicket(data.transaction_id);
+                generateTicket(data.transaction_id + "-" + amount);
             }
         });
     }
@@ -246,4 +268,5 @@
     }, 1000);
 </script>
 </body>
-</html>
+    </html>
+    
